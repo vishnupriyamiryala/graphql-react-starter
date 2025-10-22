@@ -26,6 +26,10 @@ const AlbumsList = ({
     onAlbumCreated();
   };
 
+  const handleCancelCreate = () => {
+    setShowCreateForm(false);
+  };
+
   const handleAlbumUpdated = () => {
     onAlbumUpdated();
   };
@@ -47,19 +51,24 @@ const AlbumsList = ({
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          size="sm"
-          variant={showCreateForm ? 'outline' : 'default'}
-          className="gap-1.5"
-        >
-          <Plus className="h-4 w-4" />
-          {showCreateForm ? 'Cancel' : 'New Album'}
-        </Button>
+        {!showCreateForm && (
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            size="sm"
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            New Album
+          </Button>
+        )}
       </div>
 
       {showCreateForm && (
-        <CreateAlbumForm userId={userId} onSuccess={handleAlbumCreated} />
+        <CreateAlbumForm
+          userId={userId}
+          onSuccess={handleAlbumCreated}
+          onCancel={handleCancelCreate}
+        />
       )}
 
       {displayAlbums.length === 0 ? (

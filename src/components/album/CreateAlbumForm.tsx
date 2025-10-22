@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { CREATE_ALBUM } from '../../graphql/mutations';
 import type { CreateAlbumData } from '../../types';
@@ -11,9 +11,10 @@ import { Card, CardContent } from '../ui/card';
 interface CreateAlbumFormProps {
   userId: string;
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-const CreateAlbumForm = ({ userId, onSuccess }: CreateAlbumFormProps) => {
+const CreateAlbumForm = ({ userId, onSuccess, onCancel }: CreateAlbumFormProps) => {
   const [title, setTitle] = useState('');
   const [createAlbum, { loading }] = useMutation<CreateAlbumData>(CREATE_ALBUM);
 
@@ -78,7 +79,18 @@ const CreateAlbumForm = ({ userId, onSuccess }: CreateAlbumFormProps) => {
             />
           </div>
 
-          <div className="flex items-center justify-end pt-2">
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              onClick={onCancel}
+              disabled={loading}
+              variant="ghost"
+              size="sm"
+              className="gap-1.5"
+            >
+              <X className="h-4 w-4" />
+              <span>Cancel</span>
+            </Button>
             <Button
               type="submit"
               disabled={loading || !title.trim()}
