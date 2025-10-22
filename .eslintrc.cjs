@@ -29,5 +29,17 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
   },
+  overrides: [
+    {
+      files: ['**/*.test.ts', '**/*.test.tsx', 'src/test/**/*', 'vitest.config.ts'],
+      env: {
+        'vitest-globals/env': true,
+      },
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+  ],
 };
 

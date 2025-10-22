@@ -39,7 +39,7 @@ const CreateAlbumForm = ({ userId, onSuccess, onCancel }: CreateAlbumFormProps) 
         },
       });
 
-      toast.success('Album created successfully! 🎉', {
+      toast.success('Album created successfully! ', {
         id: toastId,
         description: `"${title.trim()}" has been added to the collection`,
       });

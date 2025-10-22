@@ -138,6 +138,10 @@ npm run dev
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
+- `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run all tests once
+- `npm run test:ui` - Open Vitest UI for interactive testing
+- `npm run test:coverage` - Generate test coverage report
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint errors automatically
 - `npm run format` - Format code with Prettier
@@ -236,13 +240,76 @@ Comprehensive error handling throughout the application:
 - Loading states prevent user confusion
 - Empty states guide users when no data exists
 
-## 🧪 Testing Approach
+## 🧪 Testing
 
-The codebase is structured for easy testing:
-- Components are pure and isolated
-- Custom hooks can be tested independently
-- GraphQL queries/mutations are separated for mocking
-- TypeScript ensures type safety
+Comprehensive test coverage using Vitest and React Testing Library.
+
+**📖 For detailed testing documentation, see [TESTING.md](./TESTING.md)**
+
+### Test Suite Overview
+
+- **24 tests** covering components, hooks, and user interactions
+- **Test Files**: 4 test suites
+  - `usePagination.test.ts` - 9 tests for pagination logic
+  - `UserCard.test.tsx` - 6 tests for user card rendering
+  - `PostsList.test.tsx` - 4 tests for posts display
+  - `Pagination.test.tsx` - 5 tests for pagination UI
+
+### What's Tested
+
+1. **Component Rendering**
+   - User cards display correct information
+   - Posts lists render properly
+   - Pagination controls work as expected
+
+2. **User Interactions**
+   - Button clicks trigger correct callbacks
+   - Navigation links point to correct routes
+   - Form inputs update state correctly
+
+3. **Custom Hooks**
+   - Pagination logic calculates pages correctly
+   - State updates work properly
+   - Edge cases (first/last page) handled
+
+4. **TypeScript Integration**
+   - All tests fully typed
+   - Type-safe test utilities
+   - Mock data matches production types
+
+### Running Tests
+
+```bash
+# Run tests in watch mode
+npm run test
+
+# Run all tests once
+npm run test:run
+
+# Open interactive test UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+```
+
+### Test Structure
+
+```
+src/
+├── test/
+│   ├── setup.ts          # Test configuration
+│   ├── testUtils.tsx     # Custom render utilities
+│   └── mockData.ts       # Mock data for tests
+├── components/
+│   ├── user/
+│   │   ├── UserCard.test.tsx
+│   │   └── PostsList.test.tsx
+│   └── common/
+│       └── Pagination.test.tsx
+└── hooks/
+    └── usePagination.test.ts
+```
 
 ## 📝 Code Quality
 
@@ -313,6 +380,7 @@ This project fully satisfies all the requirements mentioned in the interview tas
 ### Bonus Points ✓
 
 - ✅ **TypeScript usage**: Full TypeScript implementation with strict typing
+- ✅ **Unit testing**: 24 comprehensive tests using Vitest + React Testing Library
 - ✅ **Clean commit history**: Meaningful commit messages throughout
 - ✅ **Modern UI/UX**: Production-quality design with attention to detail
 - ✅ **Performance optimizations**: Efficient queries, pagination, infinite scroll
