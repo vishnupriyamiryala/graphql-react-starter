@@ -9,19 +9,19 @@ This application demonstrates user management with GraphQL, featuring pagination
 ## 📸 Screenshots
 
 ### Users List with Pagination
-![Users List](screenshots/Screenshot%202025-10-22%20at%202.00.40%20PM.png)
+![Users List](screenshots/users-list.png)
 
 ### User Detail Page
-![User Detail](screenshots/Screenshot%202025-10-22%20at%202.00.57%20PM.png)
+![User Detail](screenshots/user-detail.png)
 
 ### User Posts Tab
-![User Posts](screenshots/Screenshot%202025-10-22%20at%202.01.21%20PM.png)
+![User Posts](screenshots/user-posts.png)
 
 ### User Albums Tab
-![User Albums](screenshots/Screenshot%202025-10-22%20at%202.01.27%20PM.png)
+![User Albums](screenshots/user-albums.png)
 
 ### Album Management
-![Album Management](screenshots/Screenshot%202025-10-22%20at%202.01.48%20PM.png)
+![Album Management](screenshots/album-management.png)
 
 ## 📋 Features
 
