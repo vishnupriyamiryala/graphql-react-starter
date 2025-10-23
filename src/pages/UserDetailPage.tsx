@@ -21,10 +21,7 @@ import PostsList from '../components/user/PostsList';
 import AlbumsList from '../components/album/AlbumsList';
 import ErrorMessage from '../components/common/ErrorMessage';
 import EmptyState from '../components/common/EmptyState';
-import {
-  PostCardSkeleton,
-  AlbumCardSkeleton,
-} from '../components/common/SkeletonCard';
+import { PostCardSkeleton } from '../components/common/SkeletonCard';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 
@@ -44,7 +41,7 @@ const UserDetailPage = () => {
     variables: { id },
     skip: !id,
     fetchPolicy: 'cache-first',
-    notifyOnNetworkStatusChange: false,
+    nextFetchPolicy: 'cache-first',
   });
 
   const {
@@ -55,9 +52,9 @@ const UserDetailPage = () => {
     fetchMore,
   } = useQuery<PostsData>(GET_USER_POSTS, {
     variables: { userId: id, page: 1, limit: POSTS_PER_PAGE },
-    skip: !id,
+    skip: !id || activeTab !== 'posts',
     fetchPolicy: 'cache-first',
-    notifyOnNetworkStatusChange: true,
+    nextFetchPolicy: 'cache-first',
   });
 
   const {
@@ -67,9 +64,9 @@ const UserDetailPage = () => {
     refetch: refetchAlbums,
   } = useQuery<AlbumsData>(GET_USER_ALBUMS, {
     variables: { userId: id },
-    skip: !id,
+    skip: !id || activeTab !== 'albums',
     fetchPolicy: 'cache-first',
-    notifyOnNetworkStatusChange: false,
+    nextFetchPolicy: 'cache-first',
   });
 
   const user = userData?.user;
@@ -79,37 +76,7 @@ const UserDetailPage = () => {
 
   // Infinite scroll observer
   useEffect(() => {
-    const handleLoadMorePosts = () => {
-      if (postsLoading || posts.length >= totalPosts) return;
-
-      const nextPage = postsPage + 1;
-      fetchMore({
-        variables: {
-          userId: id,
-          page: nextPage,
-          limit: POSTS_PER_PAGE,
-        },
-        updateQuery: (prev, { fetchMoreResult }) => {
-          if (!fetchMoreResult) return prev;
-          return {
-            user: {
-              ...prev.user,
-              posts: {
-                ...prev.user.posts,
-                data: [
-                  ...prev.user.posts.data,
-                  ...fetchMoreResult.user.posts.data,
-                ],
-                meta: fetchMoreResult.user.posts.meta,
-              },
-            },
-          };
-        },
-      });
-      setPostsPage(nextPage);
-    };
-
-    if (!loadMoreRef.current || activeTab !== 'posts') return;
+    if (!loadMoreRef.current || activeTab !== 'posts' || !postsData) return;
 
     const observer = new IntersectionObserver(
       entries => {
@@ -118,7 +85,31 @@ const UserDetailPage = () => {
           posts.length < totalPosts &&
           !postsLoading
         ) {
-          handleLoadMorePosts();
+          const nextPage = postsPage + 1;
+          fetchMore({
+            variables: {
+              userId: id,
+              page: nextPage,
+              limit: POSTS_PER_PAGE,
+            },
+            updateQuery: (prev, { fetchMoreResult }) => {
+              if (!fetchMoreResult) return prev;
+              return {
+                user: {
+                  ...prev.user,
+                  posts: {
+                    ...prev.user.posts,
+                    data: [
+                      ...prev.user.posts.data,
+                      ...fetchMoreResult.user.posts.data,
+                    ],
+                    meta: fetchMoreResult.user.posts.meta,
+                  },
+                },
+              };
+            },
+          });
+          setPostsPage(nextPage);
         }
       },
       { threshold: 0.1 }
@@ -127,15 +118,8 @@ const UserDetailPage = () => {
     observer.observe(loadMoreRef.current);
 
     return () => observer.disconnect();
-  }, [
-    posts.length,
-    totalPosts,
-    postsLoading,
-    activeTab,
-    fetchMore,
-    id,
-    postsPage,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, posts.length, totalPosts, postsLoading, postsPage]);
 
   if (!id) {
     return (
@@ -280,7 +264,7 @@ const UserDetailPage = () => {
             <div className="flex sm:flex-col gap-3">
               <div className="text-center p-4 bg-muted rounded-lg min-w-[80px]">
                 <p className="text-2xl font-bold text-foreground">
-                  {posts.length}
+                  {totalPosts || (postsData ? posts.length : '-')}
                 </p>
                 <p className="text-xs font-medium text-muted-foreground">
                   Posts
@@ -288,7 +272,7 @@ const UserDetailPage = () => {
               </div>
               <div className="text-center p-4 bg-muted rounded-lg min-w-[80px]">
                 <p className="text-2xl font-bold text-foreground">
-                  {albums.length}
+                  {albumsData ? albums.length : '-'}
                 </p>
                 <p className="text-xs font-medium text-muted-foreground">
                   Albums
@@ -387,15 +371,7 @@ const UserDetailPage = () => {
 
         {activeTab === 'albums' && (
           <div>
-            {albumsLoading ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <AlbumCardSkeleton key={i} />
-                  ))}
-                </div>
-              </div>
-            ) : albumsError ? (
+            {albumsError ? (
               <ErrorMessage error={albumsError} retry={refetchAlbums} />
             ) : (
               <AlbumsList
@@ -403,6 +379,7 @@ const UserDetailPage = () => {
                 userId={id}
                 onAlbumCreated={() => refetchAlbums()}
                 onAlbumUpdated={() => refetchAlbums()}
+                loading={albumsLoading}
               />
             )}
           </div>

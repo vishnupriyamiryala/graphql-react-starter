@@ -30,7 +30,10 @@ const ErrorMessage = ({ error, retry }: ErrorMessageProps) => {
 
               {retry && (
                 <Button
-                  onClick={retry}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    retry();
+                  }}
                   variant="outline"
                   size="sm"
                   className="gap-1.5"

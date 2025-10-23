@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client/react';
-import { Users as UsersIcon, Activity, Globe } from 'lucide-react';
+import { NetworkStatus } from '@apollo/client';
+import { Users as UsersIcon, Activity, Globe, Loader2 } from 'lucide-react';
 import { GET_USERS } from '../graphql/queries';
 import type { UsersData, User } from '../types';
 import { usePagination } from '../hooks/usePagination';
@@ -7,7 +8,6 @@ import UserCard from '../components/user/UserCard';
 import ErrorMessage from '../components/common/ErrorMessage';
 import EmptyState from '../components/common/EmptyState';
 import Pagination from '../components/common/Pagination';
-import { UserCardSkeleton } from '../components/common/SkeletonCard';
 import { Card, CardContent } from '../components/ui/card';
 
 const USERS_PER_PAGE = 5;
@@ -19,12 +19,13 @@ const UsersPage = () => {
       pageSize: USERS_PER_PAGE,
     });
 
-  const { loading, error, data, refetch } = useQuery<UsersData>(GET_USERS, {
+  const { loading, error, data, refetch, networkStatus } = useQuery<UsersData>(GET_USERS, {
     variables: {
       page: currentPage,
       limit: USERS_PER_PAGE,
     },
     fetchPolicy: 'cache-first',
+    notifyOnNetworkStatusChange: true,
   });
 
   const actualTotalCount = data?.users.meta.totalCount || 0;
@@ -37,42 +38,25 @@ const UsersPage = () => {
 
   const users = data?.users.data || [];
 
-  if (loading) {
+  // Initial loading (no data yet) - show centered loader
+  if (loading && !data) {
     return (
-      <div className="space-y-6 animate-slide-up">
-        {/* Header Skeleton */}
-        <div className="space-y-1">
-          <div className="h-8 bg-muted rounded w-1/4 animate-pulse"></div>
-          <div className="h-4 bg-muted rounded w-1/6 animate-pulse"></div>
-        </div>
-
-        {/* Stats Cards Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted"></div>
-                  <div className="space-y-2 flex-1">
-                    <div className="h-3 bg-muted rounded w-2/3"></div>
-                    <div className="h-6 bg-muted rounded w-1/2"></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* User Cards Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[...Array(USERS_PER_PAGE)].map((_, i) => (
-            <UserCardSkeleton key={i} />
-          ))}
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto" />
+          <div>
+            <p className="font-semibold text-foreground">Loading users...</p>
+            <p className="text-sm text-muted-foreground">Please wait</p>
+          </div>
         </div>
       </div>
     );
   }
-  if (error) return <ErrorMessage error={error} retry={refetch} />;
+  
+  // Check if we're refetching with existing data - show overlay loader
+  const isRefetching = (networkStatus === NetworkStatus.refetch || loading) && data;
+  
+  if (error && !data) return <ErrorMessage error={error} retry={refetch} />;
   if (!data?.users.data.length) {
     return (
       <EmptyState
@@ -83,7 +67,22 @@ const UsersPage = () => {
   }
 
   return (
-    <div className="space-y-6 animate-slide-up">
+    <div className="space-y-6 animate-slide-up relative">
+      {/* Refetching Overlay */}
+      {isRefetching && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-card p-6 rounded-lg shadow-lg border border-border">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-6 w-6 text-primary animate-spin" />
+              <div>
+                <p className="font-semibold text-foreground">Refreshing...</p>
+                <p className="text-sm text-muted-foreground">Updating user data</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-3xl font-bold text-foreground">Team Directory</h1>

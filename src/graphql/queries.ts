@@ -54,6 +54,7 @@ export const GET_USER_DETAILS = gql`
 export const GET_USER_POSTS = gql`
   query GetUserPosts($userId: ID!, $page: Int, $limit: Int) {
     user(id: $userId) {
+      id
       posts(options: { paginate: { page: $page, limit: $limit } }) {
         data {
           id
@@ -122,6 +123,7 @@ export const GET_POSTS = gql`
 export const GET_USER_ALBUMS = gql`
   query GetUserAlbums($userId: ID!) {
     user(id: $userId) {
+      id
       albums {
         data {
           id

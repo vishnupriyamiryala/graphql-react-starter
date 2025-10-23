@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Music2 } from 'lucide-react';
+import { Plus, Music2, Loader2 } from 'lucide-react';
 import type { Album as AlbumType } from '../../types';
 import AlbumItem from './AlbumItem.tsx';
 import CreateAlbumForm from './CreateAlbumForm.tsx';
@@ -11,6 +11,7 @@ interface AlbumsListProps {
   userId: string;
   onAlbumCreated: () => void;
   onAlbumUpdated: () => void;
+  loading?: boolean;
 }
 
 const AlbumsList = ({
@@ -18,6 +19,7 @@ const AlbumsList = ({
   userId,
   onAlbumCreated,
   onAlbumUpdated,
+  loading = false,
 }: AlbumsListProps) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -71,7 +73,14 @@ const AlbumsList = ({
         />
       )}
 
-      {displayAlbums.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center space-y-3">
+            <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto" />
+            <p className="text-sm text-muted-foreground">Loading albums...</p>
+          </div>
+        </div>
+      ) : displayAlbums.length === 0 ? (
         <EmptyState
           message="No albums yet"
           description="Create your first album using the button above"

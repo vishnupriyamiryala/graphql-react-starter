@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CREATE_ALBUM } from '../../graphql/mutations';
 import type { CreateAlbumData } from '../../types';
@@ -18,9 +18,7 @@ const CreateAlbumForm = ({ userId, onSuccess, onCancel }: CreateAlbumFormProps) 
   const [title, setTitle] = useState('');
   const [createAlbum, { loading }] = useMutation<CreateAlbumData>(CREATE_ALBUM);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
+  const performCreate = async () => {
     if (!title.trim()) {
       return;
     }
@@ -49,16 +47,53 @@ const CreateAlbumForm = ({ userId, onSuccess, onCancel }: CreateAlbumFormProps) 
         onSuccess();
       }, 300);
     } catch (err) {
+      // Check if it's a network error (offline)
+      const isNetworkError = err instanceof Error &&
+        (err.message.includes('Failed to fetch') ||
+         err.message.includes('Network request failed') ||
+         err.message.includes('NetworkError'));
+
+      const errorMessage = isNetworkError
+        ? 'You appear to be offline. Please check your internet connection and try again.'
+        : err instanceof Error
+          ? err.message
+          : 'An error occurred';
+
       toast.error('Failed to create album', {
         id: toastId,
-        description: err instanceof Error ? err.message : 'An error occurred',
+        description: errorMessage,
+        action: {
+          label: 'Try Again',
+          onClick: (e) => {
+            e?.preventDefault?.();
+            performCreate();
+          },
+        },
       });
-      console.error('Error creating album:', err);
+
+      // Safely log error without circular references
+      console.error('Error creating album:', {
+        message: err instanceof Error ? err.message : String(err),
+        name: err instanceof Error ? err.name : 'Unknown',
+      });
     }
   };
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    await performCreate();
+  };
+
   return (
-    <Card>
+    <Card className="relative">
+      {loading && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+          <div className="flex items-center gap-2 text-primary">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="font-semibold">Creating album...</span>
+          </div>
+        </div>
+      )}
       <CardContent className="p-5">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -97,8 +132,17 @@ const CreateAlbumForm = ({ userId, onSuccess, onCancel }: CreateAlbumFormProps) 
               size="sm"
               className="gap-1.5"
             >
-              <Plus className="h-4 w-4" />
-              <span>{loading ? 'Creating...' : 'Create Album'}</span>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  <span>Create Album</span>
+                </>
+              )}
             </Button>
           </div>
         </form>

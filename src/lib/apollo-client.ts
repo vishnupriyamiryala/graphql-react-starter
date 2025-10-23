@@ -16,17 +16,40 @@ const client = new ApolloClient({
               return incoming;
             },
           },
+          user: {
+            keyArgs: ['id'],
+            merge(_existing, incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+      User: {
+        keyFields: ['id'],
+        fields: {
+          posts: {
+            keyArgs: false,
+            merge(_existing, incoming) {
+              return incoming;
+            },
+          },
+          albums: {
+            keyArgs: false,
+            merge(_existing, incoming) {
+              return incoming;
+            },
+          },
         },
       },
     },
   }),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'cache-and-network',
+      fetchPolicy: 'cache-first',
       errorPolicy: 'all',
     },
     query: {
-      fetchPolicy: 'network-only',
+      fetchPolicy: 'cache-first',
       errorPolicy: 'all',
     },
     mutate: {

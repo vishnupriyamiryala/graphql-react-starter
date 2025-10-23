@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useMutation } from '@apollo/client/react';
-import { Save, X } from 'lucide-react';
+import { Save, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UPDATE_ALBUM } from '../../graphql/mutations';
 import type { UpdateAlbumData, Album } from '../../types';
@@ -33,9 +33,7 @@ const UpdateAlbumForm = ({
     }
   }, []);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
+  const performUpdate = async () => {
     if (!title.trim()) {
       return;
     }
@@ -63,16 +61,53 @@ const UpdateAlbumForm = ({
         onSuccess();
       }, 300);
     } catch (err) {
+      // Check if it's a network error (offline)
+      const isNetworkError = err instanceof Error &&
+        (err.message.includes('Failed to fetch') ||
+         err.message.includes('Network request failed') ||
+         err.message.includes('NetworkError'));
+
+      const errorMessage = isNetworkError
+        ? 'You appear to be offline. Please check your internet connection and try again.'
+        : err instanceof Error
+          ? err.message
+          : 'An error occurred';
+
       toast.error('Failed to update album', {
         id: toastId,
-        description: err instanceof Error ? err.message : 'An error occurred',
+        description: errorMessage,
+        action: {
+          label: 'Try Again',
+          onClick: (e) => {
+            e?.preventDefault?.();
+            performUpdate();
+          },
+        },
       });
-      console.error('Error updating album:', err);
+
+      // Safely log error without circular references
+      console.error('Error updating album:', {
+        message: err instanceof Error ? err.message : String(err),
+        name: err instanceof Error ? err.name : 'Unknown',
+      });
     }
   };
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    await performUpdate();
+  };
+
   return (
-    <Card ref={formRef}>
+    <Card ref={formRef} className="relative">
+      {loading && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+          <div className="flex items-center gap-2 text-primary">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="font-semibold">Updating album...</span>
+          </div>
+        </div>
+      )}
       <CardContent className="p-5">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -111,8 +146,17 @@ const UpdateAlbumForm = ({
               size="sm"
               className="gap-1.5"
             >
-              <Save className="h-4 w-4" />
-              <span>{loading ? 'Updating...' : 'Save'}</span>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Updating...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  <span>Save</span>
+                </>
+              )}
             </Button>
           </div>
         </form>
