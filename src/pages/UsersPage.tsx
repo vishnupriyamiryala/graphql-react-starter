@@ -24,6 +24,7 @@ const UsersPage = () => {
       page: currentPage,
       limit: USERS_PER_PAGE,
     },
+    fetchPolicy: 'cache-first',
   });
 
   const actualTotalCount = data?.users.meta.totalCount || 0;
