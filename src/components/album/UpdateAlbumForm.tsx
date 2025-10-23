@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { Save, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,6 +21,17 @@ const UpdateAlbumForm = ({
 }: UpdateAlbumFormProps) => {
   const [title, setTitle] = useState(album.title);
   const [updateAlbum, { loading }] = useMutation<UpdateAlbumData>(UPDATE_ALBUM);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to form when it mounts
+  useEffect(() => {
+    if (formRef.current) {
+      formRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -61,7 +72,7 @@ const UpdateAlbumForm = ({
   };
 
   return (
-    <Card>
+    <Card ref={formRef}>
       <CardContent className="p-5">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
