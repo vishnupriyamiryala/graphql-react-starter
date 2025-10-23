@@ -1,10 +1,32 @@
+import { useEffect, useState } from 'react';
 import { Toaster as Sonner } from 'sonner';
 
 const Toaster = () => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  );
+
+  useEffect(() => {
+    // Watch for theme changes
+    const observer = new MutationObserver(() => {
+      setTheme(
+        document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+      );
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <Sonner
+      theme={theme}
       position="top-center"
-      richColors={false}
+      richColors={true}
       expand={true}
       duration={3000}
       toastOptions={{
@@ -13,7 +35,6 @@ const Toaster = () => {
           color: 'hsl(var(--card-foreground))',
           border: '1px solid hsl(var(--border))',
           borderRadius: '12px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
           padding: '16px',
           fontSize: '14px',
           fontWeight: '500',
