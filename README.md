@@ -244,8 +244,6 @@ Comprehensive error handling throughout the application:
 
 Comprehensive test coverage using Vitest and React Testing Library.
 
-**📖 For detailed testing documentation, see [TESTING.md](./TESTING.md)**
-
 ### Test Suite Overview
 
 - **24 tests** covering components, hooks, and user interactions
